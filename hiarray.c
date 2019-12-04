@@ -84,19 +84,19 @@ hiarray_idx(struct hiarray *a, void *elem)
 void *
 hiarray_push(struct hiarray *a)
 {
-    void *elem, *new;
+    void *elem, *new_elem;
     size_t size;
 
     if (a->nelem == a->nalloc) {
 
         /* the array is full; allocate new array */
         size = a->size * a->nalloc;
-        new = hi_realloc(a->elem, 2 * size);
-        if (new == NULL) {
+        new_elem = hi_realloc(a->elem, 2 * size);
+        if (new_elem == NULL) {
             return NULL;
         }
 
-        a->elem = new;
+        a->elem = new_elem;
         a->nalloc *= 2;
     }
 

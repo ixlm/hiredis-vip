@@ -5,3 +5,5 @@
 /*.dylib
 /*.a
 /*.pc
+linux_build
+my_build.sh

@@ -592,7 +592,7 @@ redisReader *redisReaderCreate(void) {
 static redisContext *redisContextInit(void) {
     redisContext *c;
 
-    c = calloc(1,sizeof(redisContext));
+    c = (redisContext*)calloc(1,sizeof(redisContext));
     if (c == NULL)
         return NULL;
 

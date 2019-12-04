@@ -6,21 +6,27 @@
 OBJ=net.o hiredis.o sds.o async.o read.o hiarray.o hiutil.o command.o crc16.o adlist.o hircluster.o
 EXAMPLES=hiredis-example hiredis-example-libevent hiredis-example-libev hiredis-example-glib
 TESTS=hiredis-test
-LIBNAME=libhiredis_vip
-PKGCONFNAME=hiredis_vip.pc
+# LIBNAME=libhiredis_vip
+LIBNAME=libhiredis
+PKGCONFNAME=hiredis.pc
 
 HIREDIS_VIP_MAJOR=$(shell grep HIREDIS_VIP_MAJOR hircluster.h | awk '{print $$3}')
 HIREDIS_VIP_MINOR=$(shell grep HIREDIS_VIP_MINOR hircluster.h | awk '{print $$3}')
 HIREDIS_VIP_PATCH=$(shell grep HIREDIS_VIP_PATCH hircluster.h | awk '{print $$3}')
 
 # Installation related variables and target
-PREFIX?=/usr/local
-INCLUDE_PATH?=include/hiredis-vip
+# PREFIX?=/usr/local
+# INCLUDE_PATH?=include/hiredis-vip
+
+PREFIX?=linux_build
+INCLUDE_PATH?=include/hiredis
+
 LIBRARY_PATH?=lib
 PKGCONF_PATH?=pkgconfig
 INSTALL_INCLUDE_PATH= $(DESTDIR)$(PREFIX)/$(INCLUDE_PATH)
 INSTALL_LIBRARY_PATH= $(DESTDIR)$(PREFIX)/$(LIBRARY_PATH)
 INSTALL_PKGCONF_PATH= $(INSTALL_LIBRARY_PATH)/$(PKGCONF_PATH)
+LIBUV_DIR=../../../thirdparty/libuv/linux_build
 
 # redis-server configuration used for testing
 REDIS_PORT=56379
@@ -35,11 +41,14 @@ endef
 export REDIS_TEST_CONFIG
 
 # Fallback to gcc when $CC is not in $PATH.
-CC:=$(shell sh -c 'type $(CC) >/dev/null 2>/dev/null && echo $(CC) || echo gcc')
+
+# CC:=$(shell sh -c 'type $(CC) >/dev/null 2>/dev/null && echo $(CC) || echo gcc')
+CC:=g++
 OPTIMIZATION?=-O3
 WARNINGS=-Wall -W -Wstrict-prototypes -Wwrite-strings
 DEBUG?= -g -ggdb
-REAL_CFLAGS=$(OPTIMIZATION) -fPIC $(CFLAGS) $(WARNINGS) $(DEBUG) $(ARCH)
+REAL_CFLAGS=$(OPTIMIZATION) -fPIC $(CFLAGS) $(WARNINGS) $(DEBUG) $(ARCH) -std=c++17 -fpermissive
+REAL_CXXFLAGS=$(OPTIMIZATION) -fPIC $(CFLAGS) $(WARNINGS) $(DEBUG) $(ARCH) -std=c++17 -fpermissive
 REAL_LDFLAGS=$(LDFLAGS) $(ARCH)
 
 DYLIBSUFFIX=so
@@ -65,7 +74,7 @@ ifeq ($(uname_S),Darwin)
   DYLIB_MAKE_CMD=$(CC) -shared -Wl,-install_name,$(DYLIB_MINOR_NAME) -o $(DYLIBNAME) $(LDFLAGS)
 endif
 
-all: $(DYLIBNAME) $(STLIBNAME) hiredis-test $(PKGCONFNAME)
+all: $(DYLIBNAME) $(STLIBNAME) hiredis-test $(PKGCONFNAME) hiredis-example-libuv test
 
 # Deps (use make dep to generate this)
 
@@ -117,7 +126,7 @@ hiredis-example-libuv:
 	@false
 else
 hiredis-example-libuv: examples/example-libuv.c adapters/libuv.h $(STLIBNAME)
-	$(CC) -o examples/$@ $(REAL_CFLAGS) $(REAL_LDFLAGS) -I. -I$(LIBUV_DIR)/include $< $(LIBUV_DIR)/.libs/libuv.a -lpthread $(STLIBNAME)
+	$(CC) -o examples/$@ $(REAL_CFLAGS) $(REAL_LDFLAGS) -I. -I$(LIBUV_DIR)/include $< $(LIBUV_DIR)/lib/libuv.a -lpthread $(STLIBNAME)
 endif
 
 hiredis-example: examples/example.c $(STLIBNAME)
@@ -140,7 +149,8 @@ check: hiredis-test
 	kill `cat /tmp/hiredis-test-redis.pid`
 
 .c.o:
-	$(CC) -std=c99 -pedantic -c $(REAL_CFLAGS) $<
+	$(CC)  -pedantic -c $(REAL_CFLAGS) $<
+	# $(CC) -std=c99 -pedantic -c $(REAL_CFLAGS) $<
 
 clean:
 	rm -rf $(DYLIBNAME) $(STLIBNAME) $(TESTS) $(PKGCONFNAME) examples/hiredis-example* *.o *.gcda *.gcno *.gcov
@@ -161,10 +171,10 @@ $(PKGCONFNAME): hiredis.h
 	@echo libdir=$(PREFIX)/$(LIBRARY_PATH) >> $@
 	@echo includedir=$(PREFIX)/$(INCLUDE_PATH) >> $@
 	@echo >> $@
-	@echo Name: hiredis-vip >> $@
+	@echo Name: hiredis >> $@
 	@echo Description: Minimalistic C client library for Redis and Redis Cluster. >> $@
 	@echo Version: $(HIREDIS_VIP_MAJOR).$(HIREDIS_VIP_MINOR).$(HIREDIS_VIP_PATCH) >> $@
-	@echo Libs: -L\$${libdir} -lhiredis_vip >> $@
+	@echo Libs: -L\$${libdir} -lhiredis >> $@
 	@echo Cflags: -I\$${includedir} -D_FILE_OFFSET_BITS=64 >> $@
 
 install: $(DYLIBNAME) $(STLIBNAME) $(PKGCONFNAME)

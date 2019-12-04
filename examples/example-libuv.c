@@ -8,7 +8,7 @@
 #include <adapters/libuv.h>
 
 void getCallback(redisAsyncContext *c, void *r, void *privdata) {
-    redisReply *reply = r;
+    redisReply *reply = reinterpret_cast<redisReply *>(r);
     if (reply == NULL) return;
     printf("argv[%s]: %s\n", (char*)privdata, reply->str);
 

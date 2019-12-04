@@ -440,7 +440,7 @@ _hi_sendn(int sd, const void *vptr, size_t n)
     ssize_t nsend;
     const char *ptr;
 
-    ptr = vptr;
+    ptr = (const char*)vptr;
     nleft = n;
     while (nleft > 0) {
         nsend = send(sd, ptr, nleft, 0);
@@ -471,7 +471,7 @@ _hi_recvn(int sd, void *vptr, size_t n)
     ssize_t nrecv;
     char *ptr;
 
-    ptr = vptr;
+    ptr = (char*)vptr;
     nleft = n;
     while (nleft > 0) {
         nrecv = recv(sd, ptr, nleft, 0);

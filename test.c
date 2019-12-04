@@ -730,15 +730,20 @@ static void test_throughput(struct config config) {
 // }
 
 int main(int argc, char **argv) {
-    struct config cfg = {
-        .tcp = {
-            .host = "127.0.0.1",
-            .port = 6379
-        },
-        .unix = {
-            .path = "/tmp/redis.sock"
-        }
-    };
+    // struct config cfg = {
+    //     .tcp = {
+    //         .host = "127.0.0.1",
+    //         .port = 6379
+    //     },
+    //     .unix = {
+    //         .path = "/tmp/redis.sock"
+    //     }
+    // };
+    struct config cfg;
+    cfg.tcp.host = "127.0.0.1";
+    cfg.tcp.port = 6379;
+    cfg.unix.path = "/tmp/redis.sock";
+
     int throughput = 1;
     int test_inherit_fd = 1;
 

@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "command.h"
 #include "hiutil.h"
@@ -1111,7 +1112,7 @@ redis_parse_cmd(struct cmd *r)
                 m = token;
                 token = NULL;
 
-                kpos = hiarray_push(r->keys);
+                kpos = (struct keypos *)hiarray_push(r->keys);
                 if (kpos == NULL) {
                     goto enomem;
                 }
@@ -1612,7 +1613,7 @@ error:
     r->result = CMD_PARSE_ERROR;
     errno = EINVAL;
     if(r->errstr == NULL){
-        r->errstr = hi_alloc(100*sizeof(*r->errstr));
+        r->errstr = (char*) hi_alloc(100*sizeof(*r->errstr));
     }
 
     len = _scnprintf(r->errstr, 100, "Parse command error. Cmd type: %d, state: %d, break position: %d.", 
@@ -1623,7 +1624,7 @@ error:
 struct cmd *command_get()
 {
     struct cmd *command;
-    command = hi_alloc(sizeof(struct cmd));
+    command = (struct cmd *)hi_alloc(sizeof(struct cmd));
     if(command == NULL)
     {
         return NULL;

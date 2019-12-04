@@ -52,9 +52,9 @@ sds sdsnewlen(const void *init, size_t initlen) {
     struct sdshdr *sh;
 
     if (init) {
-        sh = malloc(sizeof *sh+initlen+1);
+        sh = (struct sdshdr *)malloc(sizeof *sh+initlen+1);
     } else {
-        sh = calloc(sizeof *sh+initlen+1,1);
+        sh = (struct sdshdr *)calloc(sizeof *sh+initlen+1,1);
     }
     if (sh == NULL) return NULL;
     sh->len = initlen;
